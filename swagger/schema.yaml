@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: Ticket service
+  description: Tickets and events service
+  version: 1.0.0
+
+
+tags:
+  - name: Tickets
+    description: Ticket operations
+  - name: Events
+    description: Event operations
+  - name: Booking
+    description: Booking operations
+
+
+paths:
+  /tickets:
+    get:
+      summary: Get all tickets
+      description: Get all tickets. Use `limit` and `offset` for pagination.
+      tags:
+        - Tickets
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+          required: False
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfTicketsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+          
+    post:
+      summary: Create a new ticket
+      tags:
+        - Tickets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      responses:
+        '201':
+          description: Ticket was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /tickets/{ticketId}:
+    get:
+      summary: Get ticket by ID
+      tags:
+        - Tickets
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      responses:
+        '200':
+          description: The ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      summary: Update a ticket by ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      tags:
+        - Tickets
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+
+      responses:
+        '200':
+          description: Ticket was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '201':
+          description: Ticket was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      summary: Delete the ticket by ID
+      tags:
+        - Tickets
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      responses:
+        '204':
+          description: Ticket has deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /events:
+    get:
+      summary: Get all events
+      tags:
+        - Events
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+          required: False
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfEventsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      summary: Create a new event
+      tags:
+        - Events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Event has created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /events/{eventId}:
+    get:
+      summary: Get event by ID
+      tags:
+        - Events
+      parameters:
+        - $ref: '#/components/parameters/EventIdParam'
+      responses:
+        '200':
+          description: The event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      summary: Update event by ID
+      tags:
+        - Events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      parameters:
+        - $ref: '#/components/parameters/EventIdParam'
+      responses:
+        '200':
+          description: The event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      summary: Delete event by ID
+      tags:
+        - Events
+      parameters:
+        - $ref: '#/components/parameters/EventIdParam'
+      responses:
+        '204':
+          description: Event deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /tickets/type/count:
+    get:
+      summary: Calculate the sum of tickets for all tickets those ticket type is less than given ticket type
+      description: 'Вернуть количество объектов, значение поля type которых меньше заданного.'
+      tags:
+        - Tickets
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/TicketType'
+      responses:
+        '200':
+          description: The sum of tickets for given ticket type
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 1235
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /tickets/discount/sum:
+    get:
+      summary: Calculate the sum of discount for all tickets
+      tags:
+        - Tickets
+      description: 'Рассчитать сумму значений поля discount для всех объектов.'
+      responses:
+        '200':
+          description: The sum of discount for all tickets
+          content:
+            application/json:
+              schema:
+                type: number
+                example: 123.5
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /tickets/discount/count:
+    get:
+      summary: Count tickets by discount
+      tags:
+        - Tickets
+      responses:
+        '200':
+          description: 'Сгруппировать объекты по значению поля discount, вернуть количество элементов в каждой группе.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    discount:
+                      type: integer
+                      format: int32
+                      example: 10
+                    count:
+                      type: integer
+                      example: 100
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /booking/sell/vip/{ticketId}/:
+    post:
+      parameters:
+        - in: path
+          name: ticketId
+          schema:
+            type: integer
+          required: true
+          description: ticket id
+      tags:
+        - Booking
+      summary: Create VIP ticket
+      description: Скопировать указанный билет, создав такой же, но с категорией "VIP" и с удвоенной ценой
+      responses:
+        '201':
+          description: Event has created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /booking/sell/discount/{ticketId}/{discount}:
+    post:
+      parameters:
+        - in: path
+          name: ticketId
+          schema:
+            type: integer
+          required: true
+          description: ticket ID
+        - in: path
+          name: discount
+          schema:
+            type: integer
+          required: true
+          description: discount
+      tags:
+        - Booking
+      summary: Create discount ticket
+      description: Cоздать новый билет на основе указанного, указав скидку в заданное число %, и, одновременно, увеличив цену билета на ту же самую сумму
+      responses:
+        '201':
+          description: Event has created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+components:
+  responses:
+    ListOfTicketsResponse:
+      description: List of tickets
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Ticket'
+
+    ListOfEventsResponse:
+      description: List of events
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Event'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: string
+                  example: field xxx must be greater than
+
+    NotFoundError:
+      description: Not found error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: string
+                  example: entity with id 12 not found
+
+
+  parameters:
+    TicketIdParam:
+      name: ticketId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        
+    EventIdParam:
+      name: eventnId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+
+  schemas:
+    Ticket:
+      type: object
+      required:
+        - name
+        - coordinates
+        - price
+        - discount
+        - refundable
+        - event
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          readOnly: true
+        name:
+          type: string
+          nullable: false
+          example: "Концерт Доры"
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        creationDate:
+          type: string
+          format: date
+          readOnly: true
+          nullable: false
+          example: '2023-12-13'
+        price:
+          nullable: false
+          type: number
+          format: double
+          example: 5000.0
+          minimum: 1
+        discount:
+          type: number
+          format: double
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 0.0
+          maximum: 100
+        refundable:
+          nullable: false
+          example: false
+          type: boolean
+        type:
+          $ref: '#/components/schemas/TicketType'
+        event:
+          $ref: '#/components/schemas/Event'
+
+    Coordinates:
+      type: object
+      required:
+        - x
+        - y
+      properties:
+        x:
+          example: 100
+          type: integer
+          nullable: false
+          exclusiveMinimum: true
+          minimum: -686
+        y:
+          nullable: false
+          type: integer
+          example: 100
+
+    Event:
+      type: object
+      required:
+        - name
+        - minAge
+      properties:
+        id:
+          type: integer
+          nullable: false
+          minimum: 1
+          readOnly: true
+          description: 'Should be unique'
+        name:
+          type: string
+          minLength: 1
+          example: 'Концерт Доры'
+          nullable: false
+        date:
+          type: string
+          format: date
+          example: '2023-12-13'
+        minAge:
+          type: integer
+          example: 12
+          nullable: false
+        eventType:
+          $ref: '#/components/schemas/EventType'
+
+    TicketType:
+      type: string
+      example: USUAL
+      enum:
+        - VIP
+        - USUAL
+        - BUDGETARY
+        - CHEAP
+
+    EventType:
+      type: string
+      example: CONCERT
+      enum:
+        - CONCERT
+        - BASEBALL
+        - BASKETBALL
+        - THEATRE_PERFORMANCE
+
