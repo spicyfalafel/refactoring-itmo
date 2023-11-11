@@ -10,8 +10,6 @@ tags:
     description: Ticket operations
   - name: Events
     description: Event operations
-  - name: Booking
-    description: Booking operations
 
 
 paths:
@@ -285,7 +283,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
 
-  /booking/sell/vip/{ticketId}/:
+  /tickets/vip/{ticketId}/:
     post:
       parameters:
         - in: path
@@ -295,7 +293,7 @@ paths:
           required: true
           description: ticket id
       tags:
-        - Booking
+        - Tickets
       summary: Create VIP ticket
       description: Скопировать указанный билет, создав такой же, но с категорией "VIP" и с удвоенной ценой
       responses:
@@ -310,7 +308,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /booking/sell/discount/{ticketId}/{discount}:
+  /tickets/discount/{ticketId}/{discount}:
     post:
       parameters:
         - in: path
@@ -326,7 +324,7 @@ paths:
           required: true
           description: discount
       tags:
-        - Booking
+        - Tickets
       summary: Create discount ticket
       description: Cоздать новый билет на основе указанного, указав скидку в заданное число %, и, одновременно, увеличив цену билета на ту же самую сумму
       responses:
