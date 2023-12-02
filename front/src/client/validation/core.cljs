@@ -1,4 +1,4 @@
-(ns client.validation
+(ns client.validation.core
   (:require
    [client.validation.ticket :as ticket-validation]
    [client.validation.event :as event-validation]

@@ -3,13 +3,10 @@
    [reagent.dom :as rdom]
    [reagent.core :as r]
    [re-frame.core :as re-frame]
-   [client.events :as events]
+   [client.events.core :as events]
    [client.routes :as routes]
    [client.views.core :as views]
-   [client.config :as config]
-   #_[devtools.core :as devtools]))
-
-#_(devtools/install!)
+   [client.config :as config]))
 
 (defn dev-setup []
   (when config/debug?

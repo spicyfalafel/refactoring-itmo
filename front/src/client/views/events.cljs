@@ -1,13 +1,15 @@
 (ns client.views.events
   (:require
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [client.events :as events]
-   [client.debounce] ; to reg event :)
+   [client.events.events-events :as e]
+   [client.events.common-events :as ce]
+   [client.debounce]
    [goog.string :as gstring]
    [goog.string.format]
-   [client.myclasses :as cls]
-   [client.mycomponents :as components]
-   [client.subs :as subs])
+   [client.views.myclasses :as cls]
+   [client.views.mycomponents :as components]
+   [client.subs.core :as subs]
+   [client.subs.events :as esubs])
   (:require-macros [stylo.core :refer [c]]))
 
 (defn event-type-icon [event-type]
@@ -25,15 +27,15 @@
 
 (defn event-new-prop [prop-path label label-id descr required?
                       & [select-values]]
-  (let [current-value  @(re-frame.core/subscribe [::subs/event-form-prop prop-path])
-        invalid-message @(re-frame.core/subscribe [::subs/event-form-path-invalid-message prop-path])
+  (let [current-value  @(re-frame.core/subscribe [::esubs/event-form-prop prop-path])
+        invalid-message @(re-frame.core/subscribe [::esubs/event-form-path-invalid-message prop-path])
         on-change-fn
         #(dispatch [:dispatch-debounce
                     {:delay 500
-                     :event [::events/change-event-and-validate prop-path (.. % -target -value)]}])]
+                     :event [::e/change-event-and-validate prop-path (.. % -target -value)]}])]
     [:div {:class (c [:px 5] :flex :flex-col)}
 
-     [:label {:for label-id} label (when required? [:span {:style {:color "#dc2626"}} "*"])]
+     [:label {:for label-id} label (when required? [components/required-*])]
 
      (if select-values
        (components/selector
@@ -51,34 +53,33 @@
       [:label {:for label-id
                :class (c :text-lg :font-light :italic)} (when descr descr)]]
      [:div
-      ;; (prn invalid-message)
       (when invalid-message
-             invalid-message)]]))
+        invalid-message)]]))
 
 (defn new-event-top []
-  (let [event-types @(subscribe [::subs/event-types])]
+  (let [event-types @(subscribe [::esubs/event-types])]
     [:div
      [event-new-prop [:name] "Название" "name" nil true]
      [event-new-prop [:date] "Дата мероприятия" "date" nil false]
      [event-new-prop [:minAge] "Минимальный возраст" "minAge" nil true]
      [event-new-prop [:eventType] "Тип мероприятия" "type" nil false
-                     event-types]]))
+      event-types]]))
 
 (defn new-event-bot []
-  (let [form-valid? @(subscribe [::subs/events-form-valid?])]
+  (let [form-valid? @(subscribe [::esubs/events-form-valid?])]
     [:div {:class (c :flex [:gap 4])}
      (when form-valid?
        [:button.submitBtn {:class (c [:w-min 100] [:bg :green-500])
-                           :on-click #(dispatch [::events/save-event-from-form])} "Создать"])
+                           :on-click #(dispatch [::e/save-event-from-form])} "Создать"])
      [:button.cancelBtn {:class (c [:w-min 100])
-                         :on-click #(dispatch [::events/toggle-new])} "Отменить"]]))
+                         :on-click #(dispatch [::ce/toggle-new])} "Отменить"]]))
 
 (defn edit-event-view-top [id]
-  (let [name-sub @(subscribe [::subs/event-form-path-invalid-message [:name]])
-        date-sub @(subscribe [::subs/event-form-path-invalid-message [:date]])
-        min-age-sub @(subscribe [::subs/event-form-path-invalid-message [:minAge]])
-        type-sub @(subscribe [::subs/event-form-path-invalid-message [:eventType]])
-        event-types @(subscribe [::subs/event-types])]
+  (let [name-sub @(subscribe [::esubs/event-form-path-invalid-message [:name]])
+        date-sub @(subscribe [::esubs/event-form-path-invalid-message [:date]])
+        min-age-sub @(subscribe [::esubs/event-form-path-invalid-message [:minAge]])
+        type-sub @(subscribe [::esubs/event-form-path-invalid-message [:eventType]])
+        event-types @(subscribe [::esubs/event-types])]
     [:div
      [:div
       {:class (c :grid [:grid-cols 2])}
@@ -96,21 +97,21 @@
       [:div {:class (c :text-l)} (str type-sub)]]]))
 
 (defn edit-event-view-bot []
-  (let [form-valid? @(subscribe [::subs/events-form-valid?])]
+  (let [form-valid? @(subscribe [::esubs/events-form-valid?])]
     [:<>
      (when form-valid?
        [:button.submitBtn
         {:class (c [:w-min 100])
-         :on-click #(dispatch [::events/update-event-from-form])}
+         :on-click #(dispatch [::e/update-event-from-form])}
         "Изменить"])
      [:button.cancelBtn {:class (c [:w-min 100])
-                         :on-click #(dispatch [::events/end-event-update])}
+                         :on-click #(dispatch [::e/end-event-update])}
       "Отменить"]]))
 
 (defn edit-event-icon [id]
   [:span [:i.fa-solid.fa-pen-to-square
           {:class (c [:px 3])
-           :on-click #(dispatch [::events/start-event-update id])}]])
+           :on-click #(dispatch [::e/start-event-update id])}]])
 
 (defn one-event [{:keys [id name date minAge eventType]}]
   ^{:key id}
@@ -132,35 +133,32 @@
        [:div.truncate {:class (c [:w-max 90] [:h-max 9])}
         [:span.truncate
          {:class (c :text-xl :text-bold [:h 9] [:h-max 9])}
-
          [:span.truncate {:class (c [:h 9] [:h-max 9])}
           [:div.tooltip {:title name}
-           (if (> (count name) 15) (str (apply str (take 15 name)) "...") name)
-           #_[:div.tooltiptext name]] ] ]]
-       ]
+           (if (> (count name) 15) (str (apply str (take 15 name)) "...") name)]]]]]
       [:span {:class (c :text-sm)} "Минимальный возраст: " minAge]]
      [:div
       {:class (c :text-xl [:pt 3])}]
      [:div {:class (c :flex :flex-col :justify-center [:gap 5])}
       [:div
        {:class [cls/base-class (c :cursor-pointer)]
-        :on-click #(dispatch [::events/start-event-update id])}
+        :on-click #(dispatch [::e/start-event-update id])}
        (edit-event-icon id)
        "Изменить"]
 
       [:div
        {:class [cls/base-class (c :cursor-pointer)]
-        :on-click #(dispatch [::events/toggle-delete-event id])}
+        :on-click #(dispatch [::ce/toggle-delete id])}
        (components/delete-icon)
        "Удалить"]]]]])
 
 (defn events-view []
-  (let [events @(re-frame/subscribe [::subs/events-1])
+  (let [events @(re-frame/subscribe [::esubs/events-1])
         modal-opened? @(subscribe [::subs/toggle-new])
         modal-delete-opened? @(subscribe [::subs/toggle-delete])
-        event-to-delete-id @(subscribe [::subs/event-to-delete-id])
+        event-to-delete-id @(subscribe [::esubs/event-to-delete-id])
         modal-edit-opened? @(subscribe [::subs/toggle-change])
-        event-to-edit-id @(subscribe [::subs/event-update-id])]
+        event-to-edit-id @(subscribe [::esubs/event-update-id])]
     [:div {:class (c :w-full)}
      [components/paging]
      (when modal-opened?
@@ -181,18 +179,17 @@
         (gstring/format "Вы уверены в удалении мероприятия %s?" event-to-delete-id)
         [:<>
          [:button.deleteBtn
-          {:on-click #(dispatch [::events/delete-event event-to-delete-id])}
+          {:on-click #(dispatch [::e/delete-event event-to-delete-id])}
           "Удалить"]
          [:button.cancelBtn
-          {:on-click #(dispatch [::events/toggle-delete-false])}
+          {:on-click #(dispatch [::e/toggle-delete-false])}
           "Отменить"]]])
 
      [:div {:class (c :grid [:grid-cols 3])}
       [:div {:class [cls/div-center]
-             :on-click #(dispatch [::events/toggle-new])}
+             :on-click #(dispatch [::ce/toggle-new])}
        "НОВЫЙ"]
       (doall
        (for [event events]
          (one-event event)))]]))
-
 

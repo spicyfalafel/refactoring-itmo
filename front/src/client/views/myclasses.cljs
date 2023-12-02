@@ -1,4 +1,4 @@
-(ns client.myclasses
+(ns client.views.myclasses
   (:require-macros [stylo.core :refer [c]]))
 
 (def base-class

@@ -1,13 +1,20 @@
-(ns client.mycomponents
+(ns client.views.mycomponents
   (:require
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [client.events :as events]
-   [client.subs :as subs]
+   [client.events.core :as events]
+   [client.events.ticket-events :as t]
+   [client.events.events-events :as e]
+   [client.subs.core :as subs]
+   [client.subs.tickets :as tsubs]
+   [client.subs.events :as esubs]
    [reagent.core :as r]
    [goog.string :as gstring]
    [goog.string.format]
-   [client.myclasses :as cls])
+   [client.views.myclasses :as cls])
   (:require-macros [stylo.core :refer [c]]))
+
+(defn required-* []
+  [:span {:style {:color "#dc2626"}} "*"])
 
 (defn paging-label [first-index last-index max-resources]
   [:span {:class (c :font-light) :style {:color "gray"}}
@@ -45,8 +52,6 @@
     [:div {:class (if size size :modal-small)}
      [:div.modalHeader
       [:h5.heading heading-label]]
-     #_[:button.closeBtn {:on-click close-fn} "x"]
-
      [:div {:class (if size :modalContent :modalContent-center)}
       modal-content-html]
      [:div.modalActions
@@ -102,13 +107,13 @@
                              & [select-values]]
   (let [mode @(subscribe [::subs/mode])
         entity (if (= :tickets mode)
-                 @(subscribe [::subs/ticket-by-id entity-id])
-                 @(subscribe [::subs/event-by-id entity-id]))
+                 @(subscribe [::tsubs/ticket-by-id entity-id])
+                 @(subscribe [::esubs/event-by-id entity-id]))
         the-value (r/atom (get-in entity prop-path))
         event
         (if (= :tickets mode)
-          ::events/change-ticket-and-validate
-          ::events/change-event-and-validate)
+          ::t/change-ticket-and-validate
+          ::e/change-event-and-validate)
         save-change-fn
         #(dispatch [:dispatch-debounce
                     {:delay 300
@@ -118,15 +123,15 @@
        {:class (c :border)}
        [:span
         [:label {:for label-id} label
-         (when required? [:span {:style {:color "#dc2626"}} "*"])]]
+         (when required? [required-*])]]
        [:div {:class (c :text-sm)}
         [:div {:class (c :flex :flex-col)}
          (if select-values
            (selector
-             select-values
-             save-change-fn
-             {:default-value "-"
-              :cls (c :w-full [:mb 2])})
+            select-values
+            save-change-fn
+            {:default-value "-"
+             :cls (c :w-full [:mb 2])})
 
            [:input {:name label-id
                     :id label-id
@@ -145,12 +150,12 @@
                     :class (c :text-lg :font-light :italic)} (when descr descr)])]]])))
 
 (defn paging []
-  (let [tickets @(re-frame/subscribe [::subs/tickets])
-        events @(re-frame/subscribe [::subs/events])
+  (let [tickets @(re-frame/subscribe [::tsubs/tickets])
+        events @(re-frame/subscribe [::esubs/events])
         page-number @(subscribe [::subs/current-page])
         page-size @(subscribe [::subs/page-size])
-        count-tickets @(subscribe [::subs/count-tickets])
-        count-events @(subscribe [::subs/count-events])
+        count-tickets @(subscribe [::tsubs/count-tickets])
+        count-events @(subscribe [::esubs/count-events])
         mode @(subscribe [::subs/mode])
         entity (if (= mode :tickets) tickets events)
         entity-count (if (= mode :tickets) count-tickets count-events)]
@@ -173,5 +178,3 @@
                       :content-center
                       :justify-center)}
       [paging-view entity-count]]]))
-
-

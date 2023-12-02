@@ -1,14 +1,17 @@
 (ns client.views.core
   (:require
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [client.events :as events]
-   [client.debounce] ; to reg event :)
+   [client.events.core :as events]
+   [client.events.ticket-events :as t]
+   [client.debounce]
    [client.routes :as routes]
-   [client.myclasses :as cls]
-   [client.mycomponents :as components]
+   [client.views.myclasses :as cls]
+   [client.views.mycomponents :as components]
    [client.views.tickets :as tickets]
    [client.views.events :as events-view]
-   [client.subs :as subs])
+   [client.subs.core :as subs]
+   [client.subs.tickets :as tsubs]
+   [client.subs.events :as esubs])
   (:require-macros [stylo.core :refer [c]]))
 
 (def sort-selector-values
@@ -37,17 +40,17 @@
            :on-click #(dispatch [::events/remove-sorting mode id])}
      "[X]"]
     (components/selector
-      (get sort-selector-values mode)
-      #(dispatch [::events/change-sort id :field  (.. % -target -value)]))
+     (get sort-selector-values mode)
+     #(dispatch [::events/change-sort id :field  (.. % -target -value)]))
 
     (components/selector
-      [{:value "netu" :desc "Без сортировки"}
-       {:value "asc" :desc "По возрастанию"}
-       {:value "desc" :desc "По убыванию"}]
-      #(dispatch [::events/change-sort id :sort-order (.. % -target -value)])
-      {:default-value "netu"
-       :cls
-       (c [:px 2] :text-center [:w 35])})]])
+     [{:value "netu" :desc "Без сортировки"}
+      {:value "asc" :desc "По возрастанию"}
+      {:value "desc" :desc "По убыванию"}]
+     #(dispatch [::events/change-sort id :sort-order (.. % -target -value)])
+     {:default-value "netu"
+      :cls
+      (c [:px 2] :text-center [:w 35])})]])
 
 (defn sort-view [mode]
   (let [sortings @(subscribe [::subs/sortings mode])]
@@ -55,21 +58,21 @@
      [:div {:class (c :text-center :font-bold)}
       [:h3 "Сортировки"]
       (when sortings (for [[sort-id _sort-map] sortings]
-        ^{:key sort-id}
-        [one-sort sort-id mode]))
+                       ^{:key sort-id}
+                       [one-sort sort-id mode]))
       (when (< (count sortings) 5)
         [:div {:class [(c :cursor-pointer
-                        [:my 2]
-                        [:border "#FAFAFA"]
-                        :rounded
-                        [:bg "#FAFAFA"]
-                        :transition-all [:duration 200] :ease-in-out
-                        [:focus-within :outline-none :shadow-none [:border "#2e3633"]]
-                        [:focus :outline-none :shadow-none [:border "#2e3633"]]
-                        [:hover [:border "#2e3633"]]) (c :text-center :w-full)]
-             :on-click
-             #(dispatch [::events/add-sorting mode])}
-       [:i.fa-solid.fa-plus]])]]))
+                          [:my 2]
+                          [:border "#FAFAFA"]
+                          :rounded
+                          [:bg "#FAFAFA"]
+                          :transition-all [:duration 200] :ease-in-out
+                          [:focus-within :outline-none :shadow-none [:border "#2e3633"]]
+                          [:focus :outline-none :shadow-none [:border "#2e3633"]]
+                          [:hover [:border "#2e3633"]]) (c :text-center :w-full)]
+               :on-click
+               #(dispatch [::events/add-sorting mode])}
+         [:i.fa-solid.fa-plus]])]]))
 
 (defn filter-view-one [prop only=? label & [selector-values]]
   (let [filter-db @(subscribe [::subs/filters prop])
@@ -115,7 +118,8 @@
                                #(dispatch [::events/change-filter
                                            prop
                                            :value
-                                           (.. % -target -value)])                               {:default-value (first selector-values)})
+                                           (.. % -target -value)])
+                               {:default-value (first selector-values)})
           [:input
            {:class (c
                     :w-full
@@ -131,8 +135,8 @@
             :placeholder "Фильтр"}])])]))
 
 (defn get-filter-values [mode]
-  (let [ticket-types @(subscribe [::subs/ticket-types])
-        event-types @(subscribe [::subs/event-types])]
+  (let [ticket-types @(subscribe [::tsubs/ticket-types])
+        event-types @(subscribe [::esubs/event-types])]
     (get {:tickets [[:id false "id"]
                     [:name true "Имя"]
                     [:coordinateX false "Координата x"]
@@ -168,11 +172,11 @@
                    [:hover [:border "#2e3633"]]))
 
 (defn header [mode]
-  (let [tickets-discount-sum @(subscribe [::subs/tickets-discount-sum])
-        tickets-discount-count @(subscribe [::subs/tickets-discount-count])
-        tickets-types-count @(subscribe [::subs/tickets-types-count])
-        ticket-types @(subscribe [::subs/ticket-types])
-        ticket-discount-count-opened? @(subscribe [::subs/ticket-discount-count-opened])]
+  (let [tickets-discount-sum @(subscribe [::tsubs/tickets-discount-sum])
+        tickets-discount-count @(subscribe [::tsubs/tickets-discount-count])
+        tickets-types-count @(subscribe [::tsubs/tickets-types-count])
+        ticket-types @(subscribe [::tsubs/ticket-types])
+        ticket-discount-count-opened? @(subscribe [::tsubs/ticket-discount-count-opened])]
     [:div {:class (c :flex :flex-col)}
      [:h3 {:class (c :text-center :font-bold)} "Крутые запросы"]
      [:div {:class [(c :flex :flex-col) (c :text-center :w-full)]}
@@ -181,13 +185,13 @@
        [:div
         [:button {:class button-cls
                   :on-click
-                  #(dispatch [::events/download-ticket-discount-sum])}
+                  #(dispatch [::t/download-ticket-discount-sum])}
          "Сумма скидок"]
         [:h5 tickets-discount-sum]]
        [:div
         [:button {:class button-cls
                   :on-click
-                  #(dispatch [::events/download-ticket-discount-count])}
+                  #(dispatch [::t/download-ticket-discount-count])}
          "Количество билетов в зависимости от скидки"]
         (when ticket-discount-count-opened?
           [components/modal
@@ -205,7 +209,7 @@
                 [:td (:discount one-map)]
                 [:td (:count one-map)]])]]
            [:button.cancelBtn {:class (c [:w-min 100])
-                               :on-click #(dispatch [::events/close-hueta])}
+                               :on-click #(dispatch [::t/close-ticket-discount-count])}
             "Очень информативно, спасибо"]
            :modal-medium])]]
       [:hr {:class (c [:pt 2])}]
@@ -213,9 +217,9 @@
       [:div
        [:button {:class button-cls
                  :on-click
-                 #(dispatch [::events/download-ticket-types-count])}
+                 #(dispatch [::t/download-ticket-types-count])}
         "Количество билетов меньших заданного типа"]
-       [components/selector ticket-types #(dispatch [::events/change-ticket-type (.. % -target -value)])]
+       [components/selector ticket-types #(dispatch [::t/change-ticket-type (.. % -target -value)])]
 
        [:h5 tickets-types-count]]]
 
@@ -237,7 +241,6 @@
         {:on-click #(dispatch [::events/set-mode :tickets])
          :class
          [(when (= :tickets mode) (c :font-bold))
-
           (c [:px 1] :underline)]}
         "Билеты"]
        [:button

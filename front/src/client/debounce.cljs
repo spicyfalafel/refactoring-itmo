@@ -5,7 +5,7 @@
 
 (def registered-keys (atom nil))
 
-(defn dispatch-if-not-superceded [{:keys [key delay event time-received]}]
+(defn dispatch-if-not-superceded [{:keys [key event time-received]}]
   (when (= time-received (get @registered-keys key))
     (dispatch event)))
 
@@ -23,5 +23,5 @@
 
 (rf/reg-event-fx
  :dispatch-debounce
- (fn [fx [_ deb]]
+ (fn [_ [_ deb]]
    {:dispatch-debounce deb}))

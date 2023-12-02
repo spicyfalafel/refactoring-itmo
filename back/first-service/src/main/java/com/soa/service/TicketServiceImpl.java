@@ -327,7 +327,8 @@ public class TicketServiceImpl implements TicketService {
         var res = new ArrayList<Map<String, Number>>();
 
         for(var t : groupedByDiscount.entrySet()){
-            var h = Map.of("discount", t.getKey(), "count", (Number) t.getValue().size());
+            var h =
+                    Map.of("discount", t.getKey(), "count", (Number) t.getValue().size());
             res.add(h);
         }
         return res;

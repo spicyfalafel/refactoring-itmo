@@ -195,6 +195,7 @@ public class TicketController {
     }
 
 //- [] GET /tickets/type/count
+
     @GetMapping(value = Endpoints.GET_TICKETS_TYPE_COUNT)
     public ResponseEntity<Object> getTicketsTypeCount(
             @RequestParam("type") TicketType type
