@@ -64,17 +64,17 @@
 
 (defn filters-map->str [filters-map]
   (when filters-map
-    (apply
-     str
-     (drop 1
-           (reduce
-            (fn [acc [field {:keys [value operator]}]]
-              (str acc "&filter=" (name field)
-                   "%5B"
-                   (or (operator-str->backend-operator operator) "eq")
-                   "%5D%3D" value))
-            ""
-            filters-map)))))
+    (->>
+      (reduce
+        (fn [acc [field {:keys [value operator]}]]
+          (str acc "&filter=" (name field)
+               "%5B"
+               (or (operator-str->backend-operator operator) "eq")
+               "%5D%3D" value))
+        ""
+        filters-map)
+      (drop 1)
+      (apply str))))
 
 (defn page-url [db]
   (let [current-page (get-in db [:paging :current-page])

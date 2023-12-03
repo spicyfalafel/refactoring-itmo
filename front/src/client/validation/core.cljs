@@ -9,22 +9,23 @@
   (->> (reverse via)
        (some messages)))
 
+(defn explain-spec->data [problems messages]
+  (mapv
+   (fn [{path :path via :via}]
+     {:path path
+      :message (get-message via messages)})
+   problems))
+
 (defn validate-event [new-event]
-  (prn "validate-event " new-event)
   (if (s/valid? ::event-validation/event new-event) :ok
-      (filter (fn [m] (-> m :path not-empty))
-              (mapv
-               (fn [{path :path via :via}]
-                 {:path path
-                  :message (get-message via event-validation/event-messages)})
-               (:cljs.spec.alpha/problems (s/explain-data ::event-validation/event new-event))))))
+    (filter (fn [m] (-> m :path not-empty))
+              (explain-spec->data
+                (:cljs.spec.alpha/problems (s/explain-data ::event-validation/event new-event))
+                event-validation/event-messages))))
 
 (defn validate-ticket [new-ticket]
-  (prn "ticket " new-ticket)
   (if (s/valid? ::ticket-validation/ticket new-ticket) :ok
-      (filter (fn [m] (-> m :path not-empty))
-              (mapv
-               (fn [{path :path via :via}]
-                 {:path path
-                  :message (get-message via ticket-validation/ticket-messages)})
-               (:cljs.spec.alpha/problems (s/explain-data ::ticket-validation/ticket new-ticket))))))
+    (filter (fn [m] (-> m :path not-empty))
+            (explain-spec->data
+              (:cljs.spec.alpha/problems  (s/explain-data ::ticket-validation/ticket new-ticket))
+              ticket-validation/ticket-messages))))

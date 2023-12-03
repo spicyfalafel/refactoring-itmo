@@ -98,7 +98,7 @@
 (re-frame/reg-event-db
  ::event-types-downloaded
  (fn [db [_ event-types]]
-   (let [event-types (:body event-types)]
+   (let [event-types (:types (:body event-types))]
      (assoc db :event-types event-types))))
 
 (reg-event-fx
@@ -124,14 +124,13 @@
 (reg-event-fx
  ::save-form-event
  (fn [{:keys [db]} [_ path value]]
-   {:db (assoc-in db (into [:event-form] path)
-                  (cond->
-                   value
-                    (get-in parse-event path)
-                    (try
-                      ((get-in parse-event path) value)
-                      (catch js/Error _e
-                        value))))}))
+   (let [value
+         (if (get-in parse-event path)
+           (try
+             ((get-in parse-event path) value)
+             (catch js/Error _e
+               value)) value)]
+     {:db (assoc-in db (into [:event-form] path) value)})))
 
 (reg-event-fx
  ::validate-event-form

@@ -7,9 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Модель запрса на саоздание Ticket.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")

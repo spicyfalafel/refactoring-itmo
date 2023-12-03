@@ -3,7 +3,6 @@ package com.soa.model.tickets;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.soa.model.enums.TicketType;
 import com.soa.model.events.EventDto;
-import com.soa.model.tickets.Coordinates;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -4,7 +4,6 @@ import com.soa.exception.ErrorDescriptions;
 import com.soa.repository.SortCriteria;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SortMapper {
@@ -13,7 +12,7 @@ public class SortMapper {
         List<SortCriteria> sc = new ArrayList<>();
         if (sort != null) {
             try {
-                var listSorts = Arrays.asList(sort.split(","));
+                var listSorts = sort.split(",");
                 for (String oneSort : listSorts) {
                     var descSort = oneSort.charAt(0) == '-';
                     var key = "";

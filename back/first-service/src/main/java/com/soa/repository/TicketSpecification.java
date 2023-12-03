@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TicketSpecification implements Specification<Ticket> {
-    private List<FilterCriteria> criteries;
+    private final List<FilterCriteria> criteries;
 
     public TicketSpecification(List<FilterCriteria> filterCriteria) {
         this.criteries = filterCriteria;
@@ -73,4 +73,3 @@ public class TicketSpecification implements Specification<Ticket> {
         return builder.and(predicates.toArray(new Predicate[0]));
     }
 }
-

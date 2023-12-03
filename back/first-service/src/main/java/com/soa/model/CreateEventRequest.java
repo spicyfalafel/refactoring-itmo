@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * Модель запрса на саоздание Event.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")

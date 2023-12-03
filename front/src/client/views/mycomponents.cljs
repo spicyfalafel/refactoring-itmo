@@ -27,7 +27,7 @@
             (if cls
               [cls/base-class cls]
               [cls/base-class (c :w-full)])
-            :defaultValue (or default-value nil)
+            :defaultValue default-value
             :on-change on-change-fn}
    (when-not default-value
      [:option {:class cls/base-class
@@ -75,8 +75,8 @@
          :on-click #(dispatch [::events/change-page value])}
    value])
 
-(defn paging-view [events-number]
-  (when (> events-number 0)
+(defn paging-view [entity-number]
+  (when (> entity-number 0)
     (let [current-page @(subscribe [::subs/current-page])
           last-page @(subscribe [::subs/last-page])]
       [:<>
@@ -149,6 +149,8 @@
            [:label {:for label-id
                     :class (c :text-lg :font-light :italic)} (when descr descr)])]]])))
 
+(def page-sizes  [1 5 10 15 20 30 40 50 60])
+
 (defn paging []
   (let [tickets @(re-frame/subscribe [::tsubs/tickets])
         events @(re-frame/subscribe [::esubs/events])
@@ -168,7 +170,7 @@
           (count entity))
        entity-count)
 
-      [selector [1 5 10 15 20 30 40 50 60]
+      [selector page-sizes
        #(dispatch [::events/change-page-size
                    (.. % -target -value)])
        {:default-value 5
@@ -178,3 +180,40 @@
                       :content-center
                       :justify-center)}
       [paging-view entity-count]]]))
+
+(defn entity-new-prop [current-value-sub
+                       invalid-message-sub
+                       on-change-sub]
+
+  (fn  [prop-path label label-id descr required?
+                      & [select-values default-value]]
+    (let [current-value   @(re-frame.core/subscribe [current-value-sub prop-path])
+          invalid-message @(re-frame.core/subscribe [invalid-message-sub prop-path])
+          on-change-fn
+          #(dispatch [:dispatch-debounce
+                      {:delay 500
+                       :event [on-change-sub prop-path (.. % -target -value)]}])]
+      [:div {:class (c [:px 5] :flex :flex-col)}
+
+       [:label {:for label-id} label (when required? [required-*])]
+
+       (if select-values
+         (selector
+           select-values
+           on-change-fn
+           {:cls (c :w-full [:mb 2])
+            :default-value default-value
+            })
+         [:input {:name label-id
+                  :id label-id
+                  :class (c :border [:h 10] :text-2xl)
+                  :maxLength 30
+                  :on-change on-change-fn
+                  :placeholder (str current-value)}])
+
+       [:div
+        [:label {:for label-id
+                 :class (c :text-lg :font-light :italic)} (when descr descr)]]
+       [:div
+        (when invalid-message
+          invalid-message)]])))

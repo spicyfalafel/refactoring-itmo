@@ -23,3 +23,14 @@
      [:m 2]
      :cursor-pointer
      [:hover :shadow-inner [:bg :gray-200]]))
+
+(def card
+   (c [:bg "#FAFAFA"]
+      [:border :current]
+      :flex-row
+      :flex
+      :justify-between
+      [:p 2]
+      [:m 2]
+      [:hover :shadow-inner [:bg :gray-200]]
+      [:rounded :xl]))

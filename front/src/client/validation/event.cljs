@@ -11,9 +11,9 @@
 (s/def ::name (s/and string? (fn [s] (not= 0 (count s)))))
 
 (s/def ::date (fn [v]
-                 (or (= v "") (nil? v)
-                 (re-matches
-                   #"(\d{4})-(\d{2})-(\d{2})" v))))
+                (or (= v "") (nil? v)
+                    (re-matches
+                     #"(\d{4})-(\d{2})-(\d{2})" v))))
 
 (s/def ::minAge #(or
                   (and (number? %) (pos? %))

@@ -32,52 +32,26 @@ public enum ErrorDescriptions {
     INCORRECT_OFFSET("Некорректное смещение (>= 0)", HttpStatus.BAD_REQUEST)
     ;
 
-    /**
-     * Сообщение ошибки.
-     */
     private final String message;
 
-    /**
-     * Статус ошибки.
-     */
     private final HttpStatus status;
 
-    /**
-     * Метод выбрасывает исключение приложения.
-     *
-     * @throws ApplicationException исключение приложения
-     */
     public void throwException() throws ApplicationException {
         throw exception();
     }
 
-    /**
-     * Метод выбрасывает ислючение если объект == null.
-     *
-     * @param obj объект для проверки
-     */
     public void throwIfNull(Object obj) {
         if (obj == null) {
             throw exception();
         }
     }
 
-    /**
-     * Метод выбрасывает ислючение если условие истинно.
-     *
-     * @param condition условие для проверки
-     */
     public void throwIfTrue(Boolean condition) {
         if (condition) {
             throw exception();
         }
     }
 
-    /**
-     * Метод выбрасывает ислючение если условие ложно.
-     *
-     * @param condition условие для проверки
-     */
     public void throwIfFalse(Boolean condition) {
         if (!condition) {
             throw exception();

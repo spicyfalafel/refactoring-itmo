@@ -18,8 +18,7 @@
                            ticket))
                        tickets)
          tickets-id-map (update-vals (group-by :id tickets) first)]
-     (-> db
-         (assoc :tickets tickets-id-map)))))
+     (assoc db :tickets tickets-id-map))))
 
 (reg-event-fx
  ::download-tickets
@@ -99,7 +98,7 @@
  (fn [{:keys [db]} [_ ticket]]
    (http/http-put db
                   (http/full-url (str "/tickets/" (:id ticket)))
-                  (dissoc (assoc ticket :event {:id (:eventId ticket)}) :eventId)
+                  (dissoc (assoc ticket :event {:id (:eventId ticket)}) :id :eventId :creationDate)
                   [::ticket-updated]
                   [::ce/download-fail])))
 
@@ -111,9 +110,9 @@
 
 (re-frame/reg-event-db
  ::ticket-types-downloaded
- (fn [db [_ event-types]]
-   (let [event-types (:body event-types)]
-     (assoc db :ticket-types event-types))))
+ (fn [db [_ ticket-types]]
+   (let [ticket-types (:types (:body ticket-types))]
+     (assoc db :ticket-types ticket-types))))
 
 (reg-event-fx
  ::download-ticket-types
@@ -162,7 +161,6 @@
                   [::ticket-discount-sum-downloaded]
                   [::ce/download-fail])))
 
-
 (reg-event-fx
  ::change-ticket-and-validate
  (fn [{:keys [db]} [_ prop-path value]]
@@ -201,14 +199,14 @@
 (reg-event-fx
  ::save-form
  (fn [{:keys [db]} [_ path value]]
-   {:db (assoc-in db
-                  (into [:form] path)
-                  (cond-> value
-                    (get-in parse-ticket path)
-                    (try
-                      ((get-in parse-ticket path) value)
-                      (catch js/Error _e
-                        value))))}))
+   (let [value
+         (if (get-in parse-ticket path)
+           (try
+             ((get-in parse-ticket path) value)
+             (catch js/Error _e
+               value)) value)]
+
+     {:db (assoc-in db (into [:form] path) value)})))
 
 (reg-event-fx
  ::validate-form

@@ -6,7 +6,7 @@ public enum EventType {
     BASKETBALL("Баскетбол"),
     THEATRE_PERFORMANCE("Театр");
 
-    private String ruValue;
+    private final String ruValue;
 
     EventType (String ruValue) {
         this.ruValue = ruValue;

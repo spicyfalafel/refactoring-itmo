@@ -4,7 +4,6 @@
 
 (def ticket-messages
   {::name  "Ожидалась не пустая строка"
-  ;; ::coordinates "Ожидались не пустые координаты"
    ::x "Ожидалась x > - 686 (целое число)"
    ::y "Ожидалась y - целое число"
    ::price "Ожидалось целое число больше 0"
@@ -16,10 +15,9 @@
 
 (s/def ::name (s/and string? (fn [s] (not= 0 (count s)))))
 
-
 (s/def ::x #(or (and
-                  (integer? %)
-                  (> % -686))
+                 (integer? %)
+                 (> % -686))
                 (and (some? %) (string? %) (> (parse-long %) -686))))
 
 (s/def ::y #(or
@@ -59,5 +57,4 @@
                                  ::eventId
                                  ::refundable
                                  ::creationDate]
-                        :opt-un [::type
-                                 ]))
+                        :opt-un [::type]))
