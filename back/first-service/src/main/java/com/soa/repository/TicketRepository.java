@@ -1,6 +1,6 @@
 package com.soa.repository;
 
-import com.soa.model.Ticket;
+import com.soa.model.tickets.Ticket;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

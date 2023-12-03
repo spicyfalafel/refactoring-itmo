@@ -1,6 +1,6 @@
 package com.soa.repository;
 
-import com.soa.model.Event;
+import com.soa.model.events.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

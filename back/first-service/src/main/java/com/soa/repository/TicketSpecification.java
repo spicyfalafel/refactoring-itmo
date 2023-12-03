@@ -1,7 +1,7 @@
 package com.soa.repository;
 
-import com.soa.error.ErrorDescriptions;
-import com.soa.model.Ticket;
+import com.soa.exception.ErrorDescriptions;
+import com.soa.model.tickets.Ticket;
 import com.soa.model.enums.TicketType;
 import org.springframework.data.jpa.domain.Specification;
 

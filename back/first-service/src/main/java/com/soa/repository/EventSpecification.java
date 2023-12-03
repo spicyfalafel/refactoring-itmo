@@ -1,7 +1,7 @@
 package com.soa.repository;
 
-import com.soa.error.ErrorDescriptions;
-import com.soa.model.Event;
+import com.soa.exception.ErrorDescriptions;
+import com.soa.model.events.Event;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;

@@ -91,7 +91,7 @@
  (fn [{:keys [db]} [_ event]]
    (http/http-put db
                   (http/full-url (str "/events/" (:id event)))
-                  (dissoc event :event)
+                  (dissoc event :event :id)
                   [::event-updated]
                   [::ce/download-fail])))
 

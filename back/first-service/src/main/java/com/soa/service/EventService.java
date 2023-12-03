@@ -2,7 +2,8 @@ package com.soa.service;
 
 
 import com.soa.model.CreateEventRequest;
-import com.soa.model.EventDto;
+import com.soa.model.events.EventDto;
+import com.soa.model.events.TypesDto;
 import com.soa.repository.FilterCriteria;
 import com.soa.repository.SortCriteria;
 
@@ -21,5 +22,5 @@ public interface EventService {
 
     long countEvents();
 
-    List<Object> getTypes();
+    TypesDto getTypes();
 }

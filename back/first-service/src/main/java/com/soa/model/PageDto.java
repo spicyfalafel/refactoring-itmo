@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 
 /**
  * Модель страничного запроса.
- *
- * @author Egor Mitrofanov.
  */
 @Data
 @NoArgsConstructor
